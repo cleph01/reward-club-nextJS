@@ -286,7 +286,7 @@ export default function Keypad({
                     >
                         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
                             <img
-                                src="http://chickenshack.rewardclub.us/background_new.jpg"
+                                src={businessInfo.logoUrl}
                                 alt="logo"
                                 style={{ width: "75px", height: "auto" }}
                             />
