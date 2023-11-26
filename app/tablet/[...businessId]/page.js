@@ -93,8 +93,8 @@ export default function Checkin({ params }) {
                 <div>
                     <img
                         src={businessInfo.tabletImage}
-                        width={500}
-                        height={300}
+                        width={700}
+                        height={420}
                         alt="Logo"
                         style={{ borderRadius: "8px" }}
                     />
