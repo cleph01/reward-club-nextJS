@@ -140,13 +140,18 @@ export default function MobileCheckin({ params }) {
                                 }}
                             >
                                 <Avatar
-                                    sx={{ m: 1, bgcolor: "secondary.main" }}
+                                    sx={{
+                                        m: 1,
+                                        width: 100,
+                                        height: 100,
+                                        bgcolor: "#fff",
+                                    }}
                                 >
                                     <img
                                         src={businessInfo?.logoUrl}
                                         alt="logo"
                                         style={{
-                                            width: "50px",
+                                            width: "100px",
                                             height: "auto",
                                         }}
                                     />
@@ -237,7 +242,7 @@ export default function MobileCheckin({ params }) {
                 />
             )}
             {/* CopyRIght */}
-            <Copyright sx={{ mt: 8, mb: 4 }} />
+            <Copyright sx={{ mt: 6, mb: 4 }} />
         </div>
     );
 }

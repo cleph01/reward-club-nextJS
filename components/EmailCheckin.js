@@ -266,11 +266,18 @@ export default function EmailCheckin({
                         alignItems: "center",
                     }}
                 >
-                    <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+                    <Avatar
+                        sx={{
+                            m: 1,
+                            width: 100,
+                            height: 100,
+                            bgcolor: "#fff",
+                        }}
+                    >
                         <img
                             src={businessInfo.logoUrl}
                             alt="logo"
-                            style={{ width: "75px", height: "auto" }}
+                            style={{ width: "100px", height: "auto" }}
                         />
                     </Avatar>
                     {!showPin && (
