@@ -57,7 +57,7 @@ const getUser = async (cellphone, email) => {
         const q = query(
             userRef,
             where(
-                cellphone ? "cellphone" : "email",
+                cellphone ? "cellPhone" : "email",
                 "==",
                 cellphone ? `+1${cellphone}` : email
             )
