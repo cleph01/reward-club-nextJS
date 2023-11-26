@@ -24,24 +24,6 @@ import { registerNewUser, sendEmailVerification } from "./lib";
 
 import styles from "./register.module.css";
 
-function Copyright(props) {
-    return (
-        <Typography
-            variant="body2"
-            color="text.secondary"
-            align="center"
-            {...props}
-        >
-            {"Copyright © "}
-            <Link color="inherit" href="https://mui.com/">
-                Your Website
-            </Link>{" "}
-            {new Date().getFullYear()}
-            {"."}
-        </Typography>
-    );
-}
-
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
@@ -131,7 +113,6 @@ export default function Register({
                 >
                     <Avatar
                         sx={{
-                            m: 1,
                             width: 100,
                             height: 100,
                             bgcolor: "#fff",

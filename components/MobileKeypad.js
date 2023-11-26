@@ -286,7 +286,6 @@ export default function Keypad({
                     >
                         <Avatar
                             sx={{
-                                m: 1,
                                 width: 100,
                                 height: 100,
                                 bgcolor: "#fff",
