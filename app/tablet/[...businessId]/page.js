@@ -84,6 +84,7 @@ export default function Checkin({ params }) {
     console.log("ParentBusiness: ", parentBusinessId);
     console.log("childBusinessId: ", childBusinessId);
     console.log("url: ", url);
+    console.log("url split: ", url.split("/"));
     console.log("businessInfo: ", businessInfo);
     return (
         <main className={styles.main}>
@@ -91,7 +92,7 @@ export default function Checkin({ params }) {
                 {/* client logo wrapper */}
                 <div>
                     <img
-                        src="http://chickenshack.rewardclub.us/background_new.jpg"
+                        src={businessInfo.tabletImage}
                         width={500}
                         height={300}
                         alt="Logo"
@@ -126,6 +127,7 @@ export default function Checkin({ params }) {
                     handleCloseModal={handleCloseModal}
                     checkinPin={businessInfo.checkinPin}
                     url={url}
+                    parentBusinessId={parentBusinessId}
                     childBusinessId={childBusinessId}
                 />
             )}
@@ -138,6 +140,7 @@ function QrCodeModal({
     handleCloseModal,
     checkinPin,
     url,
+    parentBusinessId,
     childBusinessId,
 }) {
     const style = {
@@ -172,8 +175,12 @@ function QrCodeModal({
                     <QRCode
                         value={
                             childBusinessId
-                                ? `${url}/barcode`
-                                : `${url}/barcode/${childBusinessId}`
+                                ? `https://${
+                                      url.split("/")[2]
+                                  }/mobile/${parentBusinessId}/${childBusinessId}`
+                                : `https://${
+                                      url.split("/")[2]
+                                  }/mobile/${parentBusinessId}`
                         }
                     />
                 </div>
@@ -181,13 +188,3 @@ function QrCodeModal({
         </Modal>
     );
 }
-// businessName: Chicken Shack
-// address: 36-19 Broadway
-// checkinPin: 3333
-// checkinImage: http://chickenshack.rewardclub.us/background_new.jpg
-// city: Astoria
-// logoUrl: https://lirp.cdn-website.com/8e0f3f8d/dms3rep/multi/opt/Group+828%403x-1920w.png
-// ownerId: Epuj5NNcOjTYu4lKcVBtEnLXttC3
-// state: NY
-// phoneNumber: 718-721-3035
-// youtubeId: dINMey5wUuQ
