@@ -1,95 +1,89 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client";
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+import { useState, useEffect } from "react";
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+import Image from "next/image";
+import styles from "./page.module.css";
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+import TextField from "@mui/material/TextField";
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+// Ready firebase
+import firebase_app from "../firebase/config";
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    collection,
+    onSnapshot,
+    query,
+    where,
+    orderBy,
+} from "firebase/firestore";
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+const db = getFirestore(firebase_app);
+
+export default function Home({ params }) {
+    const [phoneNumber, setPhoneNumber] = useState("");
+
+    const [businessInfo, setBusinessInfo] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchBusinessInfo = async () => {
+        const docRef = doc(db, "shops", "s2uLGFGXPiEcupbKefzW");
+
+        try {
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                console.log("Document data:", docSnap.data());
+                setBusinessInfo(docSnap.data());
+            } else {
+                // docSnap.data() will be undefined in this case
+                console.log("No such document!");
+                setError("No Such Document");
+            }
+        } catch {
+            setError(e);
+        }
+    };
+    useEffect(() => {
+        // define collection
+        const q = doc(db, "shops", "s2uLGFGXPiEcupbKefzW");
+        // define function
+        const unsubscribe = onSnapshot(
+            q,
+            (docSnap) => {
+                console.log("businessInfo:", docSnap.data());
+                setBusinessInfo(docSnap.data());
+                setLoading(false);
+            },
+            (error) => {
+                console.log("Error Getting Business Info: ", error);
+                setError(error);
+                setLoading(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, []);
+
+    // handle changing the number
+    const handleChange = (e) => {
+        setPhoneNumber(e.target.value);
+    };
+
+    console.log("phone number: ", phoneNumber);
+    console.log("businessId: ", params.businessId);
+
+    // if (loading) {
+    //     return <div>...loading</div>;
+    // }
+
+    return (
+        <main className={styles.main}>
+            <div className={styles.container}>Incorrect URL</div>
+        </main>
+    );
 }

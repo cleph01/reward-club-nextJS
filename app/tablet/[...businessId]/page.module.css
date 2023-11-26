@@ -1,0 +1,51 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* padding: 6rem; */
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 850px;
+}
+
+.inputWrapper {
+    margin-left: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    height: 450px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.inputLabel {
+    font-size: 18px;
+    font-weight: 700;
+    color: #c43329;
+    margin-bottom: 12px;
+}
+
+.qrCodeWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.verificationPin {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.logo {
+    position: relative;
+}

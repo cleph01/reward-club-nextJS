@@ -1,0 +1,60 @@
+.cellphoneDisplay {
+    height: 50px;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    text-align: center;
+    padding-top: 10px;
+    font-size: 24px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 33.333%;
+    height: 50px;
+    border: 1px solid #abaaaa;
+    border-radius: 6px;
+}
+
+.submitButton {
+    width: 100%;
+    font-size: 18px;
+    text-align: center;
+    padding: 8px;
+    background: #d5c162;
+    margin-bottom: 24px;
+}
+
+/* Modal */
+.responseContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.redeemMessage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    /* height: 100%; */
+}
