@@ -200,7 +200,7 @@ export default function Keypad({
                 setSnackbar({
                     open: true,
                     severity: "error",
-                    message: "Number Not Found. Sign Up with QR Code",
+                    message: "Number Not Found. Register with Email",
                 });
 
                 // de-activate spinner at submit button

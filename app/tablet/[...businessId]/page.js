@@ -129,7 +129,8 @@ export default function Checkin({ params }) {
                     />
 
                     <p className={styles.inputLabel} onClick={handleOpenModal}>
-                        Checking-In with Mobile? Need to Sign Up? Click Here.
+                        Checking-In with Mobile? Need to Sign Up? Click Here to
+                        Register.
                     </p>
                 </div>
             </div>
