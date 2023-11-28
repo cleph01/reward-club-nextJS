@@ -189,11 +189,6 @@ export default function Keypad({
 
                 // if update current points successful
                 if (updatedRelationshipInfo) {
-                    console.log(
-                        "UpdatedRelationshipInfo: ",
-                        updatedRelationshipInfo
-                    );
-
                     setUserInfo((prev) => ({
                         ...prev,
                         loading: false,
@@ -215,12 +210,6 @@ export default function Keypad({
 
                 // return if pin doesn't match
                 if (pin !== businessInfo.checkinPin.toString()) {
-                    console.log(
-                        "Pin Match: ",
-                        pin,
-                        businessInfo.checkinPin,
-                        pin === businessInfo.checkinPin
-                    );
                     setSnackbar({
                         open: true,
                         severity: "error",
@@ -276,10 +265,6 @@ export default function Keypad({
             setCellphone(cachedCellphone);
         }
     }, []);
-    console.log("cellphone: ", cellphone);
-    console.log("pin: ", pin);
-    console.log("businessInfo: ", businessInfo);
-    console.log("userInfo: ", userInfo);
 
     return (
         <>

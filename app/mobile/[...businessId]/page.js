@@ -83,7 +83,6 @@ export default function MobileCheckin({ params }) {
             register: false,
         });
     };
-    const handleSubmit = () => {};
 
     // trigger firestore query for businessInfo on componentDidMount
     useEffect(() => {
@@ -114,10 +113,7 @@ export default function MobileCheckin({ params }) {
         return <div>...loading</div>;
     }
 
-    console.log("ParentBusiness: ", parentBusinessId);
-    console.log("childBusinessId: ", childBusinessId);
-
-    console.log("businessInfo: ", businessInfo);
+    
 
     return (
         <div className={styles.container}>

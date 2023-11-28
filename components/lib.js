@@ -67,7 +67,6 @@ const getUser = async (cellphone, email) => {
 
         //
         if (userSnapshot.empty) {
-            console.log("UserInfo Not Found");
             // return null value
             return null;
         } else {
@@ -104,7 +103,6 @@ const getRelationshipInfo = async (userId, businessId, setSnackbar) => {
         const relationshipSnapshot = await getDocs(q);
 
         if (relationshipSnapshot.empty) {
-            console.log("No Previous Relationship");
             return null;
         } else {
             // Retrieve User Info
@@ -241,8 +239,6 @@ const addRelationship = async (
             relationshipData
         );
 
-        console.log("Document written with ID: ", docRef.id);
-
         // return the new relationshipInfo
         return {
             relationshipId: docRef.id,
@@ -280,7 +276,6 @@ const addRelationship = async (
                     : [],
         };
     } catch (error) {
-        console.log("Error Creating Relationship: ", error);
         setSnackbar((prev) => ({
             ...prev,
             open: true,
@@ -473,7 +468,7 @@ const sendEmailVerification = async (
                 nonVerifiedUserSnapshot.forEach((doc) => {
                     nonVerifiedUserData = { id: doc.id, ...doc.data() };
                 });
-                console.log("unverified user: ", nonVerifiedUserData);
+
                 // email data from previous record to be resent
                 const emailData = {
                     to: [
@@ -499,7 +494,6 @@ const sendEmailVerification = async (
                 );
 
                 if (resendVerifyEmailRef.id) {
-                    console.log("Non Verified User Exists. Resend Successful");
                     // Resend Successful. Return Success Snackbar
                     setSnackbar((prev) => ({
                         ...prev,
@@ -554,8 +548,6 @@ const verifyUser = async (docId, setSnackbar) => {
 
         const docSnap = await getDoc(docRef);
 
-        console.log("docSnap: ", docSnap);
-
         // If doc exists then batch write to create user, create business relationship, and delete
         // nonVerified user record
         if (docSnap.exists()) {
@@ -609,7 +601,7 @@ const verifyUser = async (docId, setSnackbar) => {
             return recordData;
         } else {
             // docSnap.data() will be undefined in this case
-            console.log("No such document!");
+
             setSnackbar((prev) => ({
                 ...prev,
                 open: true,
@@ -635,8 +627,6 @@ const getBusinessInfo = async (businessId) => {
 
     try {
         const docSnap = await getDoc(docRef);
-
-        console.log("docSnap: ", docSnap);
 
         if (docSnap.exists()) {
             return { ...docSnap.data() };

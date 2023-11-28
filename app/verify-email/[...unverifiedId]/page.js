@@ -100,7 +100,6 @@ export default function VerifyEmail({ params }) {
         return <div>... verifying</div>;
     }
 
-    console.log("businessInfo at verify: ", businessInfo);
     if (!userInfo) {
         return (
             <ThemeProvider theme={defaultTheme}>
@@ -151,8 +150,6 @@ export default function VerifyEmail({ params }) {
         );
     }
 
-    console.log("UserINfo: ", userInfo);
-    console.log("businessInfo at verify: ", businessInfo);
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">

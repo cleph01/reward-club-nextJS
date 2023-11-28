@@ -150,11 +150,6 @@ export default function Keypad({
 
                     // if update current points successful
                     if (updatedRelationshipInfo) {
-                        console.log(
-                            "UpdatedRelationshipInfo: ",
-                            updatedRelationshipInfo
-                        );
-
                         setUserInfo((prev) => ({
                             ...prev,
                             loading: false,
@@ -228,7 +223,6 @@ export default function Keypad({
         setProcessing(false);
     };
 
-    console.log("Keypaid userInfo: ", userInfo);
     return (
         <>
             <div className={styles.container}>

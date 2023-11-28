@@ -102,9 +102,6 @@ export default function Register({
         );
     };
 
-    console.log("userData: ", userData);
-    console.log("url at register: ", url);
-
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">

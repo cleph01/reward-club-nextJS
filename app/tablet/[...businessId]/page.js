@@ -93,13 +93,6 @@ export default function Checkin({ params }) {
         return <div>...loading</div>;
     }
 
-    console.log("ParentBusiness: ", parentBusinessId);
-    console.log("childBusinessId: ", childBusinessId);
-    console.log("url: ", url);
-    console.log("url split: ", url.split("/"));
-    console.log("businessInfo: ", businessInfo);
-    console.log("password: ", password);
-
     if (password !== businessInfo.tabletPassword) {
         return (
             <Password businessInfo={businessInfo} setPassword={setPassword} />

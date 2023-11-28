@@ -168,11 +168,6 @@ export default function EmailCheckin({
 
                 // if update current points successful
                 if (updatedRelationshipInfo) {
-                    console.log(
-                        "UpdatedRelationshipInfo: ",
-                        updatedRelationshipInfo
-                    );
-
                     setUserInfo((prev) => ({
                         ...prev,
                         loading: false,
@@ -194,12 +189,6 @@ export default function EmailCheckin({
 
                 // return if pin doesn't match
                 if (pin !== businessInfo.checkinPin.toString()) {
-                    console.log(
-                        "Pin Match: ",
-                        pin,
-                        businessInfo.checkinPin,
-                        pin === businessInfo.checkinPin
-                    );
                     setSnackbar({
                         open: true,
                         severity: "error",
@@ -257,9 +246,6 @@ export default function EmailCheckin({
         }
     }, []);
 
-    console.log("email @ email checkin: ", email);
-    console.log("Pin @ email checkin: ", pin);
-    console.log("User at email checkin: ", userInfo);
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
