@@ -20,6 +20,8 @@ import Snackbar from "../components/Snackbar";
 
 import { getUser, getRelationshipInfo, addPoint, addRelationship } from "./lib";
 
+import styles from "./emailcheckin.module.css";
+
 // TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
@@ -100,11 +102,13 @@ export default function EmailCheckin({
                 data: user.data,
             }));
 
+            localStorage.setItem("cachedEmail", email);
+
             // Now, Query business-customer-relationship table for relationshipInfo
             let relationship = await getRelationshipInfo(
                 user.userId,
                 businessId,
-                setUserInfo
+                setSnackbar
             );
 
             // if customer has relationship with the business
@@ -138,8 +142,8 @@ export default function EmailCheckin({
                         message: "Already Checked In Today",
                     });
 
-                    // Blank out cellphone and pin fields
-                    setCellphone("");
+                    // Blank out email and pin fields
+                    setEmail("");
                     setPin("");
                     setShowPin(false);
 
@@ -178,8 +182,8 @@ export default function EmailCheckin({
                         },
                     }));
 
-                    // Blank out cellphone and pin fields
-                    setCellphone("");
+                    // Blank out email and pin fields
+                    setEmail("");
                     setPin("");
                     setShowPin(false);
 
@@ -208,7 +212,8 @@ export default function EmailCheckin({
                     user,
                     parentBusinessId,
                     childBusinessId,
-                    businessInfo.rewardThreshold
+                    businessInfo.rewardThreshold,
+                    setSnackbar
                 );
 
                 if (newRelationshipInfo) {
@@ -221,8 +226,8 @@ export default function EmailCheckin({
                         },
                     }));
 
-                    // Blank out cellphone and pin fields
-                    setCellphone("");
+                    // Blank out email and pin fields
+                    setEmail("");
                     setPin("");
                     setShowPin(false);
 
@@ -254,6 +259,7 @@ export default function EmailCheckin({
 
     console.log("email @ email checkin: ", email);
     console.log("Pin @ email checkin: ", pin);
+    console.log("User at email checkin: ", userInfo);
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">

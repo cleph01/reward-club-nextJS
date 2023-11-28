@@ -122,6 +122,9 @@ export default function Keypad({
                 data: user.data,
             }));
 
+            // set cellphone in localStorage for better UX
+            localStorage.setItem("cachedCellphone", cellphone);
+
             // Now, Query business-customer-relationship table for relationshipInfo
             let relationship = await getRelationshipInfo(
                 user.userId,
@@ -266,6 +269,13 @@ export default function Keypad({
         }
     };
 
+    useEffect(() => {
+        const cachedCellphone = localStorage.getItem("cachedCellphone");
+
+        if (cachedCellphone) {
+            setCellphone(cachedCellphone);
+        }
+    }, []);
     console.log("cellphone: ", cellphone);
     console.log("pin: ", pin);
     console.log("businessInfo: ", businessInfo);

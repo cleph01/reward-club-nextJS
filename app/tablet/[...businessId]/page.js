@@ -15,6 +15,12 @@ import TextField from "@mui/material/TextField";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 
+import Typography from "@mui/material/Typography";
+import Container from "@mui/material/Container";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import Avatar from "@mui/material/Avatar";
+
 // Ready firebase
 import firebase_app from "../../../firebase/config";
 
@@ -36,9 +42,8 @@ import Keypad from "@/components/Keypad";
 export default function Checkin({ params }) {
     // get parent businessId from dynamic route
     const [parentBusinessId, childBusinessId] = params.businessId;
-    // check if subsidiary (child) businessId in query string
-    // const searchParams = useSearchParams();
-    // let childBusinessId = searchParams.get("b");
+    // controls to prevent unathorized use at homes
+    const [password, setPassword] = useState("");
     // get full url from address bar in order to create QRcode
     const url = window.location.href;
     // store phone number for display on keypad
@@ -77,6 +82,13 @@ export default function Checkin({ params }) {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        let tabletPassword = localStorage.getItem("tabletPassword");
+        if (tabletPassword) {
+            setPassword(tabletPassword);
+        }
+    }, []);
+
     if (loading && !parentBusinessId) {
         return <div>...loading</div>;
     }
@@ -86,6 +98,13 @@ export default function Checkin({ params }) {
     console.log("url: ", url);
     console.log("url split: ", url.split("/"));
     console.log("businessInfo: ", businessInfo);
+    console.log("password: ", password);
+
+    if (password !== businessInfo.tabletPassword) {
+        return (
+            <Password businessInfo={businessInfo} setPassword={setPassword} />
+        );
+    }
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -175,10 +194,10 @@ function QrCodeModal({
                     <QRCode
                         value={
                             childBusinessId
-                                ? `https://${
+                                ? `http://${
                                       url.split("/")[2]
                                   }/mobile/${parentBusinessId}/${childBusinessId}`
-                                : `https://${
+                                : `http://${
                                       url.split("/")[2]
                                   }/mobile/${parentBusinessId}`
                         }
@@ -186,5 +205,67 @@ function QrCodeModal({
                 </div>
             </Box>
         </Modal>
+    );
+}
+
+function Password({ businessInfo, password, setPassword }) {
+    const defaultTheme = createTheme();
+
+    const handleChange = (e) => {
+        e.preventDefault();
+        setPassword(e.target.value);
+    };
+
+    useEffect(() => {
+        if (password === businessInfo.tabletPassword) {
+            localStorage.setItem("tabletPassword", password);
+        }
+    }, [password]);
+
+    return (
+        <ThemeProvider theme={defaultTheme}>
+            <Container component="main" maxWidth="xs">
+                <CssBaseline />
+                <Box
+                    sx={{
+                        marginTop: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                    }}
+                >
+                    <Avatar
+                        sx={{
+                            width: 100,
+                            height: 100,
+                            bgcolor: "#fff",
+                        }}
+                    >
+                        <img
+                            src={businessInfo?.logoUrl}
+                            alt="logo"
+                            style={{ width: "100px", height: "auto" }}
+                        />
+                    </Avatar>
+                    <Typography component="h1" variant="h5">
+                        Enter Password
+                    </Typography>
+                    <Box component="form" noValidate sx={{ mt: 1 }}>
+                        <TextField
+                            margin="normal"
+                            type="password"
+                            required
+                            fullWidth
+                            id="password"
+                            label="Password"
+                            name="password"
+                            autoComplete="password"
+                            autoFocus
+                            onChange={handleChange}
+                        />
+                    </Box>
+                </Box>
+            </Container>
+        </ThemeProvider>
     );
 }

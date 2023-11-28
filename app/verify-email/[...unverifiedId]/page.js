@@ -22,11 +22,7 @@ import Snackbar from "../../../components/Snackbar";
 
 import { writeBatch, doc, collection } from "firebase/firestore";
 
-import {
-    registerNewUser,
-    sendEmailVerification,
-    getUnverifiedUser,
-} from "../../../components/lib";
+import { verifyUser, getBusinessInfo } from "../../../components/lib";
 
 import styles from "./verifyEmail.module.css";
 
@@ -54,11 +50,13 @@ const defaultTheme = createTheme();
 
 export default function VerifyEmail({ params }) {
     // get unverified user Doc Id from url
-    const unverifiedUserId = params.unverifiedId;
+    const [businessId, unverifiedRefId] = params.unverifiedId;
     // State for UserInfo
-    const [userInfo, setUserInfo] = useState();
-    // Controls for Spinner
-    const [loading, setLoading] = useState(true);
+    const [userInfo, setUserInfo] = useState(null);
+    // State for businessInfo
+    const [businessInfo, setBusinessInfo] = useState(null);
+
+    const [loading, setLoading] = useState(false);
 
     // Snackbar controls
     const [snackbar, setSnackbar] = useState({
@@ -67,36 +65,43 @@ export default function VerifyEmail({ params }) {
         message: "",
     });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const unVerifiedUser = await getUnverifiedUser(
-                    unverifiedUserId
-                );
+    const handleVerify = async (e) => {
+        setLoading(true);
+        e.preventDefault();
+        const unVerifiedUserDoc = await verifyUser(
+            unverifiedRefId,
+            setSnackbar
+        );
 
-                if (unVerifiedUser) {
-                    setLoading(false);
-                    setUserInfo(unVerifiedUser);
-                } else {
-                    setLoading(false);
-                    setUserInfo(null);
-                }
-            } catch (error) {
-                console.log(
-                    "error getting unverified user at useeffect: ",
-                    error
-                );
+        if (unVerifiedUserDoc) {
+            setLoading(false);
+            setUserInfo(unVerifiedUserDoc);
+        } else {
+            setLoading(false);
+            setUserInfo(null);
+        }
+    };
+
+    useEffect(() => {
+        const getBusiness = async () => {
+            const businessDoc = await getBusinessInfo(businessId);
+
+            if (businessDoc) {
+                setBusinessInfo(businessDoc);
+            } else {
+                console.log("Error Getting Business at verify");
             }
         };
 
-        fetchData();
+        getBusiness();
     }, []);
 
     if (loading) {
-        return <div>... loading</div>;
+        return <div>... verifying</div>;
     }
 
-    if (!unverifiedUserId || !userInfo) {
+    console.log("businessInfo at verify: ", businessInfo);
+    if (!userInfo) {
         return (
             <ThemeProvider theme={defaultTheme}>
                 <Container component="main" maxWidth="xs">
@@ -109,20 +114,34 @@ export default function VerifyEmail({ params }) {
                             alignItems: "center",
                         }}
                     >
-                        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+                        <Avatar
+                            sx={{
+                                m: 1,
+                                width: 100,
+                                height: 100,
+                                bgcolor: "#fff",
+                            }}
+                        >
                             <img
-                                src="http://chickenshack.rewardclub.us/background_new.jpg"
+                                src={businessInfo?.logoUrl}
                                 alt="logo"
-                                style={{ width: "75px", height: "auto" }}
+                                style={{
+                                    width: "100px",
+                                    height: "auto",
+                                }}
                             />
                         </Avatar>
                         <Typography component="h1" variant="h5">
-                            No Records Found
+                            Click Button To Verify
                         </Typography>
                         <Box component="form" noValidate sx={{ mt: 1 }}>
-                            <div className={styles.responseContainer}>
-                                <h3>Please Register</h3>
-                            </div>
+                            <Button
+                                variant="contained"
+                                sx={{ mt: 3, mb: 2 }}
+                                onClick={handleVerify}
+                            >
+                                Verify Email
+                            </Button>
                         </Box>
                     </Box>
 
@@ -133,6 +152,7 @@ export default function VerifyEmail({ params }) {
     }
 
     console.log("UserINfo: ", userInfo);
+    console.log("businessInfo at verify: ", businessInfo);
     return (
         <ThemeProvider theme={defaultTheme}>
             <Container component="main" maxWidth="xs">
@@ -145,33 +165,37 @@ export default function VerifyEmail({ params }) {
                         alignItems: "center",
                     }}
                 >
-                    <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+                    <Avatar
+                        sx={{
+                            m: 1,
+                            width: 100,
+                            height: 100,
+                            bgcolor: "#fff",
+                        }}
+                    >
                         <img
-                            src="http://chickenshack.rewardclub.us/background_new.jpg"
+                            src={businessInfo?.logoUrl}
                             alt="logo"
-                            style={{ width: "75px", height: "auto" }}
+                            style={{
+                                width: "100px",
+                                height: "auto",
+                            }}
                         />
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                        Verifying Your Email Address
+                        Your Email Is Now Verified
                     </Typography>
-                    <Box component="form" noValidate sx={{ mt: 1 }}>
-                        {loading ? (
-                            <CircularProgress size="2" />
-                        ) : (
-                            <div className={styles.responseContainer}>
-                                <h3>Hi, {userInfo?.firstName}!</h3>
-                                <p>Welcome to our Rewards Program 👍</p>
+                    <Box sx={{ mt: 1 }}>
+                        <div className={styles.responseContainer}>
+                            <h3>Hi, {userInfo?.firstName}!</h3>
+                            <p>Welcome to our Rewards Program 👍</p>
 
-                                <h3 className={styles.inputLabel}>
-                                    Current Points: 1
-                                </h3>
-                                <p>
-                                    Remember to Check-In each time you Visit us
-                                </p>
-                                <p>to Earn Discounts and More!</p>
-                            </div>
-                        )}
+                            <h3 className={styles.inputLabel}>
+                                Current Points: 1
+                            </h3>
+                            <p>Remember to Check-In each time you Visit us</p>
+                            <p>to Earn Discounts and More!</p>
+                        </div>
                     </Box>
                 </Box>
 

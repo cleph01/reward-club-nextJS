@@ -62,10 +62,7 @@ export default function MobileCheckin({ params }) {
     const [businessInfo, setBusinessInfo] = useState(null);
     // get parent businessId from dynamic route
     const [parentBusinessId, childBusinessId] = params.businessId;
-    // check if subsidiary (child) businessId in query string
-    // const searchParams = useSearchParams();
-    // let childBusinessId = searchParams.get("b");
-    // get full url from address bar in order to create QRcode
+    // controls for showing mobile keypad, email login, or registration
     const [showOption, setShowOption] = useState({
         keypad: false,
         email: false,

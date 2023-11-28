@@ -104,15 +104,8 @@ const getRelationshipInfo = async (userId, businessId, setSnackbar) => {
         const relationshipSnapshot = await getDocs(q);
 
         if (relationshipSnapshot.empty) {
-            // Open snack bar with error message for Relationshipt Not existing
-            setSnackbar((prev) => ({
-                ...prev,
-                open: true,
-                severity: "error",
-                message: "You've Not Signed Up Here",
-            }));
-
-            console.log("Relationship Not Found");
+            console.log("No Previous Relationship");
+            return null;
         } else {
             // Retrieve User Info
             let relationship;
@@ -200,7 +193,9 @@ const addRelationship = async (
     try {
         let businessId = !childBusinessId ? parentBusinessId : childBusinessId;
 
-        let newPoints = user.data.currentPoints + 1;
+        let newPoints = user.data.currentPoints
+            ? user.data.currentPoints + 1
+            : 1;
 
         if (newPoints >= rewardThreshold) {
             newPoints = 0;
@@ -211,18 +206,25 @@ const addRelationship = async (
             customerId: user.userId,
             parentBusinessId,
             currentPoints: newPoints,
-            checkInLog: [
-                {
-                    timestamp: Timestamp.fromDate(
-                        user.data.lastCheckIn.toDate()
-                    ),
-                    pointsAfterCheckIn: user.data.currentPoints,
-                },
-                {
-                    timestamp: Timestamp.now(),
-                    pointsAfterCheckIn: newPoints,
-                },
-            ],
+            checkInLog: user.data.lastCheckIn
+                ? [
+                      {
+                          timestamp: Timestamp.fromDate(
+                              user.data.lastCheckIn.toDate()
+                          ),
+                          pointsAfterCheckIn: user.data.currentPoints,
+                      },
+                      {
+                          timestamp: Timestamp.now(),
+                          pointsAfterCheckIn: newPoints,
+                      },
+                  ]
+                : [
+                      {
+                          timestamp: Timestamp.now(),
+                          pointsAfterCheckIn: newPoints,
+                      },
+                  ],
             redemptionLog:
                 newPoints === 0
                     ? [
@@ -244,20 +246,29 @@ const addRelationship = async (
         // return the new relationshipInfo
         return {
             relationshipId: docRef.id,
-            currentPoints: user.data.currentPoints,
+            currentPoints: user.data.currentPoints
+                ? user.data.currentPoints
+                : 0,
             newPoints,
-            checkInLog: [
-                {
-                    timestamp: Timestamp.fromDate(
-                        user.data.lastCheckIn.toDate()
-                    ),
-                    pointsAfterCheckIn: user.data.currentPoints,
-                },
-                {
-                    timestamp: Timestamp.now(),
-                    pointsAfterCheckIn: newPoints,
-                },
-            ],
+            checkInLog: user.data.lastCheckIn
+                ? [
+                      {
+                          timestamp: Timestamp.fromDate(
+                              user.data.lastCheckIn.toDate()
+                          ),
+                          pointsAfterCheckIn: user.data.currentPoints,
+                      },
+                      {
+                          timestamp: Timestamp.now(),
+                          pointsAfterCheckIn: newPoints,
+                      },
+                  ]
+                : [
+                      {
+                          timestamp: Timestamp.now(),
+                          pointsAfterCheckIn: newPoints,
+                      },
+                  ],
             redemptionLog:
                 newPoints === 0
                     ? [
@@ -364,8 +375,18 @@ const sendEmailVerification = async (
     setOpenModal,
     parentBusinessId,
     childBusinessId,
-    businessInfo
+    businessInfo,
+    url,
+    setUserData
 ) => {
+    let businessId = !childBusinessId ? parentBusinessId : childBusinessId;
+
+    // activate loading spinner
+    setUserData((prev) => ({
+        ...prev,
+        loading: true,
+    }));
+
     try {
         // Create a query to get business relationship
         const userRef = collection(db, "users");
@@ -375,57 +396,144 @@ const sendEmailVerification = async (
         const userSnapshot = await getDocs(q);
 
         if (userSnapshot.empty) {
-            // If no user exists, then add user to tempUser collection and send verification email
+            // If no user exists, then check nonVerified User table
+            // Create a query to get business relationship
+            const nonVerifiedUserRef = collection(db, "nonVerifiedUsers");
+            //
+            const q = query(
+                nonVerifiedUserRef,
+                where("email", "==", userData.email)
+            );
+            //
+            const nonVerifiedUserSnapshot = await getDocs(q);
 
-            // Get a new write batch
-            const batch = writeBatch(db);
+            // If never previously sent a email verification mail
+            if (nonVerifiedUserSnapshot.empty) {
+                // If no nonVerifiedUser exists, then OK to add user to nonVerifiedUser collection and send verification email
 
-            // TODO: Add user
-            // Generate firestore ID for new User
-            const newUserRef = doc(collection(db, "nonVerifiedUsers"));
-            // Set userData to that id
-            batch.set(newUserRef, {
-                firstName: userData.name,
-                email: userData.email,
-            });
+                // Get a new write batch
+                const batch = writeBatch(db);
 
-            // TODO: Add relationship
-            // Generate firestore ID for new User
-            const verifyEmailRef = doc(collection(db, "verifyEmails"));
+                // TODO: Add user
+                // Generate firestore ID for new User
+                const newNonVerifiedUserRef = doc(
+                    collection(db, "nonVerifiedUsers")
+                );
+                // Set userData to that id
+                batch.set(newNonVerifiedUserRef, {
+                    firstName: userData.name,
+                    email: userData.email,
+                    parentBusinessId,
+                    businessId,
+                    timestamp: Timestamp.now(),
+                    businessName: businessInfo.businessName,
+                    logoUrl: businessInfo.logoUrl,
+                });
 
-            const emailData = {
-                to: [
-                    {
-                        email: userData.email,
-                        name: userData.name,
+                // TODO: Add relationship
+                // Generate firestore ID for new User
+                const verifyEmailRef = doc(collection(db, "verifyEmails"));
+
+                const emailData = {
+                    to: [
+                        {
+                            email: userData.email,
+                            name: userData.name,
+                        },
+                    ],
+                    from: {
+                        email: "info@rewardclub.us",
+                        name: businessInfo.businessName,
                     },
-                ],
-                from: {
-                    email: "from@example.com",
-                    name: "From name",
-                },
-                subject: `Please Verify your Email - ${businessInfo.businessName} Rewards`,
-                html: `Please <a href="http://localhost:3000/verify-email/${verifyEmailRef.id}">click this Link<a> to verify your email`,
-                text: "Please click link below.",
-                parentBusinessId,
-                childBusinessId,
-            };
+                    subject: `Please Verify your Email - ${businessInfo.businessName} Rewards`,
+                    html: `<p>Hi ${userData.name}, </p><br /> Please <a href="http://${url}/verify-email/${businessId}/${newNonVerifiedUserRef.id}">click this Link<a> to verify your email`,
+                    text: "Please click link below.",
+                    timestamp: Timestamp.now(),
+                };
 
-            // Add email data to verifyEmail collection to send
-            batch.set(verifyEmailRef, emailData);
+                // Add email data to verifyEmail collection to send email
+                batch.set(verifyEmailRef, emailData);
 
-            // Commit the batch
-            await batch.commit();
+                // Commit the batch
+                await batch.commit();
 
-            // Open respone modal
-            setOpenModal(true);
+                // Open respone modal
+                setOpenModal(true);
+                // clear out registration info
+                setUserData((prev) => ({
+                    ...prev,
+                    loading: false,
+                }));
+
+                // nonVerified User exists RESEND verification email && DO NOT add to nonVerifiedUser table
+            } else {
+                // nonVerified User exists RESEND verification email && DO NOT add to nonVerifiedUser table
+                let nonVerifiedUserData;
+                // Save found record
+                nonVerifiedUserSnapshot.forEach((doc) => {
+                    nonVerifiedUserData = { id: doc.id, ...doc.data() };
+                });
+                console.log("unverified user: ", nonVerifiedUserData);
+                // email data from previous record to be resent
+                const emailData = {
+                    to: [
+                        {
+                            email: nonVerifiedUserData.email,
+                            name: nonVerifiedUserData.firstName,
+                        },
+                    ],
+                    from: {
+                        email: "info@rewardclub.us",
+                        name: businessInfo.businessName,
+                    },
+                    subject: `Please Verify your Email - ${businessInfo.businessName} Rewards`,
+                    html: `<p>Hi ${userData.name}, </p><br /> Please <a href="http://${url}/verify-email/${businessId}/${nonVerifiedUserData.id}">click this Link<a> to verify your email`,
+                    text: "Please click link below.",
+                    timestamp: Timestamp.now(),
+                };
+
+                // Add a new document with a generated id.
+                const resendVerifyEmailRef = await addDoc(
+                    collection(db, "verifyEmails"),
+                    emailData
+                );
+
+                if (resendVerifyEmailRef.id) {
+                    console.log("Non Verified User Exists. Resend Successful");
+                    // Resend Successful. Return Success Snackbar
+                    setSnackbar((prev) => ({
+                        ...prev,
+                        open: true,
+                        severity: "success",
+                        message: "Please Check Your Email to Complete Signup",
+                    }));
+                    // clear out registration info
+                    setUserData((prev) => ({
+                        ...prev,
+                        loading: false,
+                    }));
+                } else {
+                    // Failed to resend email verification by way of adding doc to verifyEmail collection
+                    setSnackbar((prev) => ({
+                        ...prev,
+                        open: true,
+                        severity: "error",
+                        message:
+                            "Verification Previously Sent. Error Resending.",
+                    }));
+                }
+            }
         } else {
             // User already exists. Return Error Snackbar
             setSnackbar((prev) => ({
                 ...prev,
                 open: true,
                 severity: "error",
-                message: "You've Already Signed Up With This Email",
+                message: "You've Already Signed Up. Go Ahead and Login",
+            }));
+            setUserData((prev) => ({
+                ...prev,
+                loading: false,
             }));
         }
     } catch (error) {
@@ -439,29 +547,106 @@ const sendEmailVerification = async (
     }
 };
 
-const getUnverifiedUser = async (docId) => {
+const verifyUser = async (docId, setSnackbar) => {
     try {
-        let userInfo;
+        let recordData;
         const docRef = doc(db, "nonVerifiedUsers", docId);
 
         const docSnap = await getDoc(docRef);
 
         console.log("docSnap: ", docSnap);
-        if (docSnap.exists()) {
-            userInfo = docSnap.data();
 
-            return userInfo;
+        // If doc exists then batch write to create user, create business relationship, and delete
+        // nonVerified user record
+        if (docSnap.exists()) {
+            recordData = docSnap.data();
+
+            // Get a new write batch
+            const batch = writeBatch(db);
+
+            // Genereate Id for new user in Users table
+            const newUserRef = doc(collection(db, "users"));
+
+            // set the Doc with the users details
+            batch.set(newUserRef, {
+                firstName: recordData.firstName,
+                email: recordData.email,
+                timestamp: Timestamp.now(),
+            });
+
+            // Generate Id for new business relationship in businessCustomerRelationship table
+            const newRelationshipRef = doc(
+                collection(db, "businessCustomerRelationships")
+            );
+            // set relationship info
+            let relationshipInfo = {
+                businessId: recordData.businessId,
+                parentBusinessId: recordData.parentBusinessId,
+                checkInLog: [
+                    { pointsAfterCheckIn: 1, timestamp: Timestamp.now() },
+                ],
+                currentPoints: 1,
+                customerId: newUserRef.id,
+                redemptionLog: [],
+                timestamp: Timestamp.now(),
+            };
+            // set the Doc with the new relationship details
+            batch.set(newRelationshipRef, relationshipInfo);
+
+            // Delete the nonVerifiedUser Record
+            const nonVerifiedUserRef = doc(db, "nonVerifiedUsers", docId);
+            batch.delete(nonVerifiedUserRef);
+
+            // Commit the batch
+            await batch.commit();
+
+            setSnackbar((prev) => ({
+                ...prev,
+                open: true,
+                severity: "success",
+                message: "Verification Successful.",
+            }));
+            return recordData;
         } else {
             // docSnap.data() will be undefined in this case
             console.log("No such document!");
+            setSnackbar((prev) => ({
+                ...prev,
+                open: true,
+                severity: "error",
+                message: "No Records Found. Try logging in with your Email.",
+            }));
 
             return null;
         }
     } catch (error) {
         console.log("Error Getting Unverified User: ", error);
+        setSnackbar((prev) => ({
+            ...prev,
+            open: true,
+            severity: "error",
+            message: "Error Verying New User.",
+        }));
     }
 };
 
+const getBusinessInfo = async (businessId) => {
+    const docRef = doc(db, "shops", businessId);
+
+    try {
+        const docSnap = await getDoc(docRef);
+
+        console.log("docSnap: ", docSnap);
+
+        if (docSnap.exists()) {
+            return { ...docSnap.data() };
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.log("error getting business info at verify: ", error);
+    }
+};
 export {
     formatPhoneNumber,
     getUser,
@@ -470,5 +655,6 @@ export {
     addRelationship,
     registerNewUser,
     sendEmailVerification,
-    getUnverifiedUser,
+    verifyUser,
+    getBusinessInfo,
 };

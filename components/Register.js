@@ -38,7 +38,7 @@ export default function Register({
     const [userData, setUserData] = useState({
         name: "",
         email: "",
-        loading: true,
+        loading: false,
     });
 
     // Controls for updating user input
@@ -63,6 +63,9 @@ export default function Register({
     const handleCloseModal = () => {
         setOpenModal(false);
     };
+
+    // get url to pass to send registration email
+    let url = window.location.href.split("/")[2];
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -93,11 +96,14 @@ export default function Register({
             setOpenModal,
             parentBusinessId,
             childBusinessId,
-            businessInfo
+            businessInfo,
+            url,
+            setUserData
         );
     };
 
     console.log("userData: ", userData);
+    console.log("url at register: ", url);
 
     return (
         <ThemeProvider theme={defaultTheme}>
@@ -161,7 +167,11 @@ export default function Register({
                             variant="contained"
                             sx={{ mt: 3, mb: 2 }}
                         >
-                            Register
+                            {userData.loading ? (
+                                <CircularProgress size={18} color="inherit" />
+                            ) : (
+                                "Register"
+                            )}
                         </Button>
 
                         <div
@@ -211,7 +221,7 @@ function CheckInModal({ userData, openModal, handleCloseModal }) {
         >
             <Box sx={style}>
                 <div className={styles.responseContainer}>
-                    <h3>Hi, {userData.name}!</h3>
+                    <h3>Hi, {userData?.name}!</h3>
                     <p>One Last Step 👍</p>
                     <p>Please Check Your Email from Us.</p>
                     <p>And Click the Link to Complete the Signup</p>
