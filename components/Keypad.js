@@ -375,6 +375,15 @@ function CheckInModal({ userInfo, openModal, handleCloseModal }) {
                                         hour12: true,
                                     })}
                                 </p>
+                                <br />
+                                <p>
+                                    <strong>** Do NOT Touch Screen **</strong>
+                                </p>
+                                <p>
+                                    <strong>
+                                        ** Until Attendant Confirms **
+                                    </strong>
+                                </p>
                             </div>
                         ) : (
                             <h3 className={styles.inputLabel}>
