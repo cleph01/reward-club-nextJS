@@ -49,3 +49,17 @@
 .logo {
     position: relative;
 }
+
+.lookupWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lookupBtnWrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}

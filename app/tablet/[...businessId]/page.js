@@ -2,13 +2,8 @@
 
 import { useState, useEffect } from "react";
 
-import { useSearchParams } from "next/navigation";
-
-import { useUrl } from "nextjs-current-url";
-
 import QRCode from "react-qr-code";
 
-import Image from "next/image";
 import styles from "./page.module.css";
 
 import TextField from "@mui/material/TextField";
@@ -20,6 +15,13 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+
+import SearchIcon from "@mui/icons-material/Search";
+
+import Snackbar from "../../../components/Snackbar";
+
+import { formatPhoneNumber, getCheckinRecord } from "../../../components/lib";
 
 // Ready firebase
 import firebase_app from "../../../firebase/config";
@@ -42,6 +44,8 @@ import Keypad from "@/components/Keypad";
 export default function Checkin({ params }) {
     // get parent businessId from dynamic route
     const [parentBusinessId, childBusinessId] = params.businessId;
+    // use subsidiary businessId, if included; else use parentBusinessId
+    const businessId = !childBusinessId ? parentBusinessId : childBusinessId;
     // controls to prevent unathorized use at homes
     const [password, setPassword] = useState("");
     // get full url from address bar in order to create QRcode
@@ -56,13 +60,12 @@ export default function Checkin({ params }) {
     const [openModal, setOpenModal] = useState(false);
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => setOpenModal(false);
+    // control for customer lookup window
+    const [lookup, setLookup] = useState(false);
 
+    console.log("lookup: ", lookup);
     // trigger firestore query for businessInfo on componentDidMount
     useEffect(() => {
-        // use subsidiary businessId, if included; else use parentBusinessId
-        const businessId = !childBusinessId
-            ? parentBusinessId
-            : childBusinessId;
         // define collection
         const q = doc(db, "shops", businessId);
         // create real-time connection with onSnapshot
@@ -98,6 +101,13 @@ export default function Checkin({ params }) {
             <Password businessInfo={businessInfo} setPassword={setPassword} />
         );
     }
+
+    if (lookup) {
+        return (
+            <CustomerLookup setLookup={setLookup} businessInfo={businessInfo} />
+        );
+    }
+
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -114,9 +124,17 @@ export default function Checkin({ params }) {
                 {/* checkin functionality */}
                 <div className={styles.inputWrapper}>
                     <div>
-                        <p className={styles.inputLabel}>Already a Member?</p>
+                        <div className={styles.lookupWrapper}>
+                            <p className={styles.inputLabel}>
+                                Previously a Member?
+                            </p>
+                            <p className={styles.inputLabel}>
+                                <SearchIcon onClick={() => setLookup(true)} />
+                            </p>
+                        </div>
+
                         <p className={styles.inputLabel}>
-                            Check-In with Mobile Number
+                            Eneter Mobile Number Here
                         </p>
                     </div>
 
@@ -259,6 +277,154 @@ function Password({ businessInfo, password, setPassword }) {
                         />
                     </Box>
                 </Box>
+            </Container>
+        </ThemeProvider>
+    );
+}
+
+function CustomerLookup({ setLookup, businessInfo }) {
+    const defaultTheme = createTheme();
+
+    const [userData, setUserData] = useState({ cellphone: "", email: "" });
+    const [checkinRecord, setCheckinRecord] = useState(null);
+
+    // Snackbar controls
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        severity: "",
+        message: "",
+    });
+
+    const handleChange = (e) => {
+        e.preventDefault();
+        if (e.target.name === "cellphone") {
+            setUserData({
+                email: "",
+                [e.target.name]: e.target.value,
+            });
+        } else if (e.target.name === "email") {
+            setUserData({
+                cellphone: "",
+                [e.target.name]: e.target.value,
+            });
+        }
+    };
+    const handleClose = (e) => {
+        e.preventDefault();
+        setLookup(false);
+    };
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+
+        const checkinRecord = await getCheckinRecord(
+            userData,
+            businessInfo.id,
+            setSnackbar
+        );
+
+        if (checkinRecord) {
+            console.log("CheckinRecord: ", checkinRecord);
+            setCheckinRecord(checkinRecord);
+        }
+    };
+
+    return (
+        <ThemeProvider theme={defaultTheme}>
+            <Container component="main" maxWidth="500px">
+                <CssBaseline />
+                <Box
+                    sx={{
+                        marginTop: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                    }}
+                >
+                    <Avatar
+                        sx={{
+                            width: 100,
+                            height: 100,
+                            bgcolor: "#fff",
+                        }}
+                    >
+                        <img
+                            src={businessInfo?.logoUrl}
+                            alt="logo"
+                            style={{ width: "100px", height: "auto" }}
+                        />
+                    </Avatar>
+                    <Typography component="h1" variant="h5">
+                        Customer Lookup
+                    </Typography>
+                    {checkinRecord && (
+                        <Box sx={{ mt: 1 }}>
+                            <h2>Name: {checkinRecord.data.firstName}</h2>
+                            <h3>
+                                Current Points: {checkinRecord.currentPoints}
+                            </h3>
+                            <h3>
+                                Last Check-In:{" "}
+                                {checkinRecord.checkInLog[
+                                    checkinRecord.checkInLog.length - 1
+                                ].timestamp
+                                    .toDate()
+                                    .toLocaleString()}
+                            </h3>
+                            <h3>
+                                Last Reward Won:{" "}
+                                {checkinRecord.redemptionLog.length > 0
+                                    ? checkinRecord.redemptionLog[
+                                          checkinRecord.redemptionLog.length - 1
+                                      ].timestamp
+                                          .toDate()
+                                          .toLocaleString()
+                                    : "Only Has " +
+                                      checkinRecord.checkInLog.length +
+                                      " Check-Ins"}
+                            </h3>
+                        </Box>
+                    )}
+                    <Box
+                        component="form"
+                        noValidate
+                        sx={{ mt: 1, width: "350px" }}
+                    >
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="cellphone"
+                            label="Cell Phone"
+                            name="cellphone"
+                            autoComplete="cellphone"
+                            autoFocus
+                            onChange={handleChange}
+                            value={formatPhoneNumber(userData.cellphone)}
+                        />
+                        <div>- Or -</div>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="email"
+                            label="Email"
+                            name="email"
+                            autoComplete="email"
+                            onChange={handleChange}
+                            value={userData.email}
+                        />
+                        <div className={styles.lookupBtnWrapper}>
+                            <Button variant="contained" onClick={handleSearch}>
+                                Search
+                            </Button>
+                            <Button variant="contained" onClick={handleClose}>
+                                Close
+                            </Button>
+                        </div>
+                    </Box>
+                </Box>
+                <Snackbar snackbar={snackbar} setSnackbar={setSnackbar} />
             </Container>
         </ThemeProvider>
     );

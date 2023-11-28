@@ -637,6 +637,65 @@ const getBusinessInfo = async (businessId) => {
         console.log("error getting business info at verify: ", error);
     }
 };
+
+const getCheckinRecord = async (userData, businessId, setSnackbar) => {
+    const { cellphone, email } = userData;
+
+    // clean the input for any non-digit values.
+    const phoneNumber = cellphone.replace(/[^\d]/g, "");
+
+    console.log("Eser data: ", phoneNumber, email);
+
+    if (cellphone && cellphone.length < 10) {
+        setSnackbar({
+            open: true,
+            severity: "error",
+            message: "Cellphone Number Incomplete",
+        });
+        return;
+    } else if (email && (!email.includes("@") || !email.includes("."))) {
+        setSnackbar({
+            open: true,
+            severity: "error",
+            message: "Invalid Email",
+        });
+        return;
+    }
+
+    try {
+        const userRecord = await getUser(phoneNumber, userData.email);
+
+        if (!userRecord) {
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: "No Customer Record Found",
+            });
+            return null;
+        } else {
+            const relationshipRecord = await getRelationshipInfo(
+                userRecord.userId,
+                businessId,
+                setSnackbar
+            );
+
+            if (!relationshipRecord) {
+                setSnackbar({
+                    open: true,
+                    severity: "error",
+                    message: "Customer Has No Checkins Here",
+                });
+
+                return null;
+            } else {
+                console.log("relationship record at lib: ", relationshipRecord);
+                return { ...userRecord, ...relationshipRecord };
+            }
+        }
+    } catch (error) {
+        console.log("Error Getting Checkin Record: ", error);
+    }
+};
 export {
     formatPhoneNumber,
     getUser,
@@ -647,4 +706,5 @@ export {
     sendEmailVerification,
     verifyUser,
     getBusinessInfo,
+    getCheckinRecord,
 };
