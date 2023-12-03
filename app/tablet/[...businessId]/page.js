@@ -134,7 +134,7 @@ export default function Checkin({ params }) {
                         </div>
 
                         <p className={styles.inputLabel}>
-                            Eneter Mobile Number Here
+                            Enter Mobile Number Here
                         </p>
                     </div>
 
